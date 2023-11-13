@@ -1,7 +1,7 @@
 const owner = "ravindrapv";
 const repo = "update-code-of-geetha";
 const token =
-  "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";
+  "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";
 async function showIssues() {
   const response = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/issues`
@@ -107,3 +107,4 @@ async function deleteSelectedIssues() {
   showIssues();
 }
 showIssues();
+// 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;
