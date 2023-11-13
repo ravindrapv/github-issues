@@ -1,8 +1,7 @@
 const owner = "ravindrapv";
 const repo = "update-code-of-geetha";
 const token =
-  "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";
-
+  "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";
 async function showIssues() {
   const response = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/issues`
