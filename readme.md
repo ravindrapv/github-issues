@@ -17,6 +17,6 @@ Before you begin, make sure you have the following installed:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/ravindrapv/update-code-of-geetha.git
+   git clone https://github.com/ravindrapv/github-issues.git
 
 2. start live server

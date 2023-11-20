@@ -1,9 +1,17 @@
 const owner = "ravindrapv";
 const repo = "update-code-of-geetha";
 const token =
-  "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";
+  "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";
+
+// Function to show/hide loader
+function toggleLoader(show) {
+  const loader = document.getElementById("loader");
+  loader.style.display = show ? "block" : "none";
+}
+
 async function fetchData(url, options = {}) {
   try {
+    toggleLoader(true);
     const response = await fetch(url, options);
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -12,7 +20,9 @@ async function fetchData(url, options = {}) {
   } catch (error) {
     console.error("Error:", error.message);
     showFlashMessage("An error occurred. Please try again.", "error");
-    throw error;
+    throw error; // Rethrow the error for higher-level error handling
+  } finally {
+    toggleLoader(false);
   }
 }
 
