@@ -1,9 +1,114 @@
 const owner = "ravindrapv";
 const repo = "update-code-of-geetha";
-const token =
-  "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";
+const token = "my_token";
 
-// Function to show/hide loader
+class GithubApi {
+  constructor({ owner, repo, token }) {
+    this.token = token;
+    this.owner = owner;
+    this.repo = repo;
+  }
+
+  async fetchIssues() {
+    try {
+      const response = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/issues`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching issues:", error.message);
+      throw error;
+    }
+  }
+
+  async createIssue({ title, body }) {
+    try {
+      const response = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/issues`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ title, body }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error creating issue:", error.message);
+      throw error;
+    }
+  }
+
+  async updateIssue({ issueId, title, body }) {
+    try {
+      const response = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/issues/${issueId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ title, body }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error updating issue:", error.message);
+      throw error;
+    }
+  }
+
+  async closeIssue({ issueId }) {
+    try {
+      const response = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/issues/${issueId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ state: "closed" }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error closing issue:", error.message);
+      throw error;
+    }
+  }
+}
+
+const githubApi = new GithubApi({ token });
+
 function toggleLoader(show) {
   const loader = document.getElementById("loader");
   loader.style.display = show ? "block" : "none";
@@ -13,14 +118,16 @@ async function fetchData(url, options = {}) {
   try {
     toggleLoader(true);
     const response = await fetch(url, options);
+
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
+
     return await response.json();
   } catch (error) {
     console.error("Error:", error.message);
     showFlashMessage("An error occurred. Please try again.", "error");
-    throw error; // Rethrow the error for higher-level error handling
+    throw error;
   } finally {
     toggleLoader(false);
   }
@@ -28,24 +135,34 @@ async function fetchData(url, options = {}) {
 
 async function showIssues() {
   try {
-    const issues = await fetchData(
-      `https://api.github.com/repos/${owner}/${repo}/issues`
-    );
+    const issues = await githubApi.fetchIssues();
 
     const issuesList = document.getElementById("issues-list");
     issuesList.innerHTML = "";
 
     issues.forEach((issue) => {
       const li = document.createElement("li");
+
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.value = issue.number;
       li.appendChild(checkbox);
 
-      const titleSpan = document.createElement("span");
-      titleSpan.textContent = issue.title;
-      li.appendChild(titleSpan);
+      const issueDetails = document.createElement("div");
+      issueDetails.classList.add("issue-details");
 
+      const titleSpan = document.createElement("span");
+      titleSpan.classList.add("issue-title");
+      titleSpan.textContent = issue.title;
+
+      const descriptionDiv = document.createElement("div");
+      descriptionDiv.classList.add("issue-description");
+      descriptionDiv.textContent = issue.body; // Assuming "body" contains the description
+
+      issueDetails.appendChild(titleSpan);
+      issueDetails.appendChild(descriptionDiv);
+
+      li.appendChild(issueDetails);
       issuesList.appendChild(li);
     });
   } catch (error) {
@@ -58,22 +175,10 @@ async function createAndShowIssue() {
     const issueTitleInput = document.getElementById("issue-title");
     const issueBodyInput = document.getElementById("issue-body");
 
-    const issueData = {
+    const newIssue = await githubApi.createIssue({
       title: issueTitleInput.value,
       body: issueBodyInput.value,
-    };
-
-    const newIssue = await fetchData(
-      `https://api.github.com/repos/${owner}/${repo}/issues`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(issueData),
-      }
-    );
+    });
 
     console.log("New issue created:", newIssue);
     showIssues();
@@ -90,36 +195,53 @@ async function updateSelectedIssues() {
     );
 
     for (const checkbox of checkboxes) {
-      const issueNumber = checkbox.value;
+      const issueId = checkbox.value;
 
-      const issueTitleInput = document.getElementById("issue-title");
-      const issueBodyInput = document.getElementById("issue-body");
-
-      const updateData = {
-        title: issueTitleInput.value,
-        body: issueBodyInput.value,
-      };
-
-      await fetchData(
-        `https://api.github.com/repos/${owner}/${repo}/issues/${issueNumber}`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updateData),
-        }
+      const existingIssues = await githubApi.fetchIssues();
+      const existingIssueData = existingIssues.find(
+        (issue) => issue.number == issueId
       );
-    }
 
-    showIssues();
-    location.reload();
-    showFlashMessage("Issues updated successfully!");
+      const modalIssueTitleInput = document.getElementById("modal-issue-title");
+      const modalIssueBodyInput = document.getElementById("modal-issue-body");
+
+      modalIssueTitleInput.value = existingIssueData.title;
+      modalIssueBodyInput.value = existingIssueData.body;
+
+      const modal = document.getElementById("myModal");
+      modal.style.display = "block";
+
+      window.updateIssue = async () => {
+        try {
+          await githubApi.updateIssue({
+            issueId,
+            title: modalIssueTitleInput.value,
+            body: modalIssueBodyInput.value,
+          });
+
+          modal.style.display = "none";
+          showIssues();
+          showFlashMessage("Issue updated successfully!");
+        } catch (error) {
+          console.error("Error updating issue:", error.message);
+        }
+      };
+    }
   } catch (error) {
     console.error("Error updating issues:", error.message);
   }
 }
+
+document.querySelector(".close").addEventListener("click", () => {
+  document.getElementById("myModal").style.display = "none";
+});
+
+window.onclick = (event) => {
+  const modal = document.getElementById("myModal");
+  if (event.target === modal) {
+    modal.style.display = "none";
+  }
+};
 
 async function deleteSelectedIssues() {
   try {
@@ -128,21 +250,9 @@ async function deleteSelectedIssues() {
     );
 
     for (const checkbox of checkboxes) {
-      const issueNumber = checkbox.value;
+      const issueId = checkbox.value;
 
-      await fetchData(
-        `https://api.github.com/repos/${owner}/${repo}/issues/${issueNumber}`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            state: "closed",
-          }),
-        }
-      );
+      await githubApi.closeIssue({ issueId });
     }
 
     showIssues();
@@ -170,5 +280,5 @@ function showFlashMessage(message, messageType = "success") {
     flashMessage.style.display = "none";
   }, 5000);
 }
+
 showIssues();
-// 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;

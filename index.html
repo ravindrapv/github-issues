@@ -9,22 +9,32 @@
 </head>
 
 <body>
-    <div id="flash-message" style="display: none;"></div>
-    <div id="issues-container">
-        <h2>GitHub Issues app</h2>
-        <ul id="issues-list"></ul>
+    <div id="flash-message" class="flash-message"></div>
+    <div id="issues-container" class="container">
+        <h2>GitHub Issues App</h2>
+        <ul id="issues-list" class="issue-list"></ul>
     </div>
-    <div id="loader"></div>
-    <div id="create-update-form">
+    <div id="loader" class="loader"></div>
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <label for="modal-issue-title">Issue Title:</label>
+            <input type="text" id="modal-issue-title">
+            <label for="modal-issue-body">Issue Body:</label>
+            <textarea id="modal-issue-body"></textarea>
+            <button onclick="updateIssue()" class="update-btn">Update Issue</button>
+        </div>
+    </div>
+    <div id="create-update-form" class="form">
         <label for="issue-title">Issue Title:</label>
         <input type="text" id="issue-title" placeholder="Enter issue title">
 
         <label for="issue-body">Issue Body:</label>
         <textarea id="issue-body" placeholder="Enter issue body"></textarea>
 
-        <button onclick="createAndShowIssue()">Create and Show Issue</button>
-        <button onclick="updateSelectedIssues()">Update Selected Issues</button>
-        <button onclick="deleteSelectedIssues()">Delete Selected Issues</button>
+        <button onclick="createAndShowIssue()" class="create-btn">Create and Show Issue</button>
+        <button onclick="updateSelectedIssues()" class="update-btn">Update Selected Issues</button>
+        <button onclick="deleteSelectedIssues()" class="delete-btn">Delete Selected Issues</button>
     </div>
 
     <script src="script.js"></script>
