@@ -18,7 +18,7 @@ GitHub Issues App is a web application that allows you to manage issues in a Git
     git clone https://github.com/ravindrapv/github-issues.git
     ```
 
-2. Open the `index.html` file in your web browser.
+2. Open the `index.html` file in your web browser or start the live server.
 
 3. Explore the following functionalities:
 

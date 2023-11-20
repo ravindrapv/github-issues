@@ -1,6 +1,6 @@
 const owner = "ravindrapv";
 const repo = "update-code-of-geetha";
-const token = "my_token";
+const token = "update_with_my_token";
 
 class GithubApi {
   constructor({ owner, repo, token }) {
@@ -143,30 +143,85 @@ async function showIssues() {
     issues.forEach((issue) => {
       const li = document.createElement("li");
 
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.value = issue.number;
-      li.appendChild(checkbox);
-
       const issueDetails = document.createElement("div");
       issueDetails.classList.add("issue-details");
 
-      const titleSpan = document.createElement("span");
+      const titleSpan = document.createElement("h2");
       titleSpan.classList.add("issue-title");
       titleSpan.textContent = issue.title;
 
-      const descriptionDiv = document.createElement("div");
+      const descriptionDiv = document.createElement("p");
       descriptionDiv.classList.add("issue-description");
       descriptionDiv.textContent = issue.body; // Assuming "body" contains the description
+
+      const editButton = document.createElement("button");
+      editButton.classList.add("edit-button");
+      editButton.textContent = "Edit";
+      editButton.addEventListener("click", () => {
+        editIssue(issue);
+      });
+
+      const deleteButton = document.createElement("button");
+      deleteButton.classList.add("delete-button");
+      deleteButton.textContent = "Delete";
+      deleteButton.addEventListener("click", async () => {
+        await deleteIssue(issue.number);
+      });
 
       issueDetails.appendChild(titleSpan);
       issueDetails.appendChild(descriptionDiv);
 
       li.appendChild(issueDetails);
+      li.appendChild(editButton);
+      li.appendChild(deleteButton);
+
       issuesList.appendChild(li);
     });
   } catch (error) {
     console.error("Error fetching issues:", error.message);
+  }
+}
+
+async function editIssue(issue) {
+  try {
+    const existingIssueData = issue;
+
+    const modalIssueTitleInput = document.getElementById("modal-issue-title");
+    const modalIssueBodyInput = document.getElementById("modal-issue-body");
+
+    modalIssueTitleInput.value = existingIssueData.title;
+    modalIssueBodyInput.value = existingIssueData.body;
+
+    const modal = document.getElementById("myModal");
+    modal.style.display = "block";
+
+    window.updateIssue = async () => {
+      try {
+        await githubApi.updateIssue({
+          issueId: issue.number,
+          title: modalIssueTitleInput.value,
+          body: modalIssueBodyInput.value,
+        });
+
+        modal.style.display = "none";
+        showIssues();
+        showFlashMessage("Issue updated successfully!");
+      } catch (error) {
+        console.error("Error updating issue:", error.message);
+      }
+    };
+  } catch (error) {
+    console.error("Error editing issue:", error.message);
+  }
+}
+
+async function deleteIssue(issueId) {
+  try {
+    await githubApi.closeIssue({ issueId });
+    showIssues();
+    showFlashMessage("Issue closed successfully!");
+  } catch (error) {
+    console.error("Error deleting issue:", error.message);
   }
 }
 
